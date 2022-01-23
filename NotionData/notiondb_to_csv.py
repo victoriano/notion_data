@@ -42,6 +42,8 @@ def get_notion_page_icon(page_id):
         return None
     elif notion_page["icon"]["type"] == "emoji":
         return notion_page["icon"]["emoji"]
+    elif notion_page["icon"]["type"] == "external":
+        return notion_page["icon"]["external"]["url"]
     else:
         return notion_page["icon"]["file"]["url"]
 
