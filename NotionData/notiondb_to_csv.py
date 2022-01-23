@@ -188,6 +188,31 @@ def NotionToCSV(db_id, name='notion_table',relations=True, show_icon=True):
     df= notion_db_to_df(db_id, relations, show_icon)
     path = name+'.csv'
     df.to_csv(path, index=False)
+
+
+#Create Functions
+#https://developers.notion.com/reference/post-page
+#https://github.com/ramnes/notion-sdk-py/blob/main/notion_client/api_endpoints.py
+def merge_notion_dbs(notion_db_origin_id, notion_db_origin_target, max_elements=None):
+    #Get all entries from origin table
+    db = get_all_db_entries(notion_db_origin_id)
+
+    db_results = db["results"]
+    
+    if max_elements != None:
+        db_results = db_results[:max_elements]
+
+    target_db_id = notion_db_origin_target
+    parent = {"type": "database_id", "database_id": target_db_id}
+    counter = 0
+
+    for db_entry in db_results:
+        counter = counter + 1
+        newpost = notion.pages.create(
+                parent=parent, icon=db_entry["icon"], properties=db_entry["properties"]
+        )
+    
+    return counter
     
 
 #Taxonomy Table: 2fbdd8aba1604e2385ed7be3a59d1984
