@@ -169,6 +169,7 @@ def parse_notion_page(entry, relations=True, show_icon=True):
     "page_url":entry["url"]
     }
 
+
     #Properties, unique to any page, are more complex
     properties_serialized = parse_page_properties(entry["properties"], relations, show_icon)
 
@@ -178,19 +179,28 @@ def parse_notion_page(entry, relations=True, show_icon=True):
 
     return entire_page_ordered
 
-def notion_db_to_df(db_id, relations=True, show_icon=True):
+def NotionToCSV(db_id, relations=False, show_icon=True, title_with_emoji=False, filtering_keys=None, name='notion_table', output="CSV"):    
     notion_db = get_all_db_entries(db_id)
     pages = []
     for result in notion_db["results"]:
+        if filtering_keys != None:
+            #Filtering the property pages results to only the desired filering keys with a dictionary comprehension
+            result["properties"] = { filter_key: result["properties"][filter_key] for filter_key in filtering_keys }
         pages.append(parse_notion_page(result, relations, show_icon))
     df = pd.DataFrame(pages)
-    return df
+    
+    #Optionally change the title property by the combination of the emoji + title
+    if title_with_emoji:
+        df["title"] = df["icon"] + " " + df["title"]
+        df.drop('icon', axis=1, inplace=True)
 
-def NotionToCSV(db_id, name='notion_table',relations=True, show_icon=True):
-    df= notion_db_to_df(db_id, relations, show_icon)
-    path = name+'.csv'
-    df.to_csv(path, index=False)
-
+    #Output type default to csv but optinally a dataframe can be returned. 
+    if output == "DataFrame":
+        return df
+    else:
+        path = name+'.csv'
+        return df.to_csv(path, index=False)  
+    
 
 #Create Functions
 #https://developers.notion.com/reference/post-page
